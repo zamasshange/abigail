@@ -1,0 +1,143 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@theme inline {
+  --font-sans: var(--font-quicksand), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-baloo), var(--font-quicksand), cursive;
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  color-scheme: light;
+
+  /* 5 colors: baby-pink bg, kitty ink, hot pink, light pink, white card */
+  --background: oklch(0.945 0.038 344);
+  --foreground: oklch(0.22 0.03 340);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.03 340);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.03 340);
+  --primary: oklch(0.62 0.25 355);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.85 0.1 349);
+  --secondary-foreground: oklch(0.22 0.03 340);
+  --muted: oklch(0.9 0.055 345);
+  --muted-foreground: oklch(0.46 0.09 348);
+  --accent: oklch(0.62 0.25 355);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.6 0.21 22);
+  --border: oklch(0.22 0.03 340);
+  --input: oklch(0.8 0.09 348);
+  --ring: oklch(0.62 0.25 355);
+  --radius: 1.25rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@utility text-shadow-cute {
+  text-shadow: 0 2px 0 var(--card), 0 4px 0 oklch(0.87 0.06 345);
+}
+
+@utility tape {
+  position: relative;
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(10vh) scale(0.6) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-110vh) scale(1.1) rotate(28deg);
+    opacity: 0;
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+}
+
+@keyframes pop-heart {
+  0% {
+    transform: translate(0, 0) scale(0.4);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) scale(1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+}
+
+.animate-float-up {
+  animation: float-up linear infinite;
+}
+.animate-bob {
+  animation: bob 4s ease-in-out infinite;
+}
+.animate-wiggle {
+  animation: wiggle 1.2s ease-in-out infinite;
+}
+.animate-pop-heart {
+  animation: pop-heart 900ms ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-up,
+  .animate-bob,
+  .animate-wiggle,
+  .animate-pop-heart {
+    animation: none !important;
+  }
+}
