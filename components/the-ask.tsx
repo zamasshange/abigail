@@ -27,14 +27,19 @@ export function TheAsk() {
     }, 1000)
   }, [])
 
-  const hearHim = () => {
+  const hearHim = async () => {
     burst()
-    void fetch('/api/forgiven', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'heard' }),
-    }).catch(() => {})
-    window.setTimeout(() => router.push('/the-summons'), 420)
+    try {
+      await fetch('/api/forgiven', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'heard' }),
+        keepalive: true,
+      })
+    } catch {
+      // still take her to the summons
+    }
+    router.push('/the-summons')
   }
 
   return (

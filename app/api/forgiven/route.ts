@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const NOTIFY_TO = 'zamashange2007@gmail.com'
+const NOTIFY_TO = process.env.NOTIFY_EMAIL ?? 'zamashange2007@gmail.com'
 
 type Body = {
   type?: unknown
@@ -37,23 +37,23 @@ export async function POST(request: Request) {
   })
 
   if (!apiKey) {
-    console.log('[v0] RESEND_API_KEY missing — skipping notification email')
-    return Response.json({ ok: false, reason: 'not_configured' }, { status: 200 })
+    console.error('RESEND_API_KEY missing — skipping notification email')
+    return Response.json({ ok: false, reason: 'not_configured' }, { status: 500 })
   }
 
   const heardMail = {
-    subject: 'The Queen heard you — Ricky answered',
+    subject: 'Ricky said yes — she heard you, king',
     text: [
-      'Ricky tapped “I hear you my handsome tall darkskin king”.',
+      'Ricky just tapped “I hear you my handsome tall darkskin king”.',
       '',
       `When: ${when} (SAST)`,
       '',
-      'She is on The Summons page now. Stay close.',
+      'She is on The Summons page now. Stay close to your phone.',
     ].join('\n'),
   }
 
   const summonsMail = {
-    subject: 'A summons from Queen Ricky — she named the meeting',
+    subject: 'Ricky made arrangements — she named when you can see her',
     text: [
       'Ricky sealed a summons. She is letting you see her.',
       '',
@@ -73,16 +73,21 @@ export async function POST(request: Request) {
 
   try {
     const resend = new Resend(apiKey)
-    await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: 'A raven for Ricky <onboarding@resend.dev>',
       to: [NOTIFY_TO],
       subject: mail.subject,
       text: mail.text,
     })
 
-    return Response.json({ ok: true })
+    if (error) {
+      console.error('Resend error:', error)
+      return Response.json({ ok: false, reason: error.message }, { status: 500 })
+    }
+
+    return Response.json({ ok: true, id: data?.id })
   } catch (error) {
-    console.log('[v0] Failed to send notification:', (error as Error).message)
-    return Response.json({ ok: false, reason: 'send_failed' }, { status: 200 })
+    console.error('Failed to send notification:', (error as Error).message)
+    return Response.json({ ok: false, reason: 'send_failed' }, { status: 500 })
   }
 }
