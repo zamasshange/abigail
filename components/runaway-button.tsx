@@ -2,95 +2,102 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-const TAUNTS = [
-  'I need a little time',
-  'wait— not so fast',
-  'nope, try again',
-  'too slow, my love',
-  'catch me first',
-  'you really thought?',
-  'hehe, missed me',
-  'this button says no',
-]
-
 /**
- * A button that dodges the pointer. On touch devices it hops away on tap
- * instead, so it stays playable with a finger. Fully keyboard-accessible:
- * focusing and pressing it always works.
+ * A button that can never be pressed. It flees on hover, proximity,
+ * and tap so "Nahhh" stays a joke, not a real answer.
  */
-export function RunawayButton({ onCaught }: { onCaught: () => void }) {
-  const [offset, setOffset] = useState({ x: 0, y: 0 })
+export function RunawayButton() {
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
   const [dodges, setDodges] = useState(0)
   const [rotation, setRotation] = useState(0)
+  const btnRef = useRef<HTMLButtonElement>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
 
-  const label = TAUNTS[dodges % TAUNTS.length]
-
   const flee = useCallback(() => {
-    const wrap = wrapRef.current
-    if (!wrap) return
-    const limitX = Math.max(40, Math.min(120, wrap.offsetWidth / 2 - 40))
-    const angle = Math.random() * Math.PI * 2
-    setOffset({
-      x: Math.round(Math.cos(angle) * limitX),
-      y: Math.round(Math.sin(angle) * 46),
-    })
-    setRotation(Math.round((Math.random() - 0.5) * 30))
+    const btn = btnRef.current
+    const w = btn?.offsetWidth ?? 110
+    const h = btn?.offsetHeight ?? 48
+    const pad = 16
+    const maxX = Math.max(pad, window.innerWidth - w - pad)
+    const maxY = Math.max(pad, window.innerHeight - h - pad)
+    const current = btn?.getBoundingClientRect()
+    let x = pad + Math.random() * (maxX - pad)
+    let y = pad + Math.random() * (maxY - pad)
+    if (current) {
+      let tries = 0
+      while (Math.hypot(x - current.left, y - current.top) < 120 && tries < 8) {
+        x = pad + Math.random() * (maxX - pad)
+        y = pad + Math.random() * (maxY - pad)
+        tries += 1
+      }
+    }
+    setPos({ x, y })
+    setRotation(Math.round((Math.random() - 0.5) * 28))
     setDodges((d) => d + 1)
   }, [])
 
-  // Pointer proximity: dodge before the cursor ever lands on it.
   useEffect(() => {
-    const wrap = wrapRef.current
-    if (!wrap) return
-
     const onMove = (event: PointerEvent) => {
       if (event.pointerType !== 'mouse') return
-      const btn = wrap.querySelector('button')
+      const btn = btnRef.current
       if (!btn) return
       const r = btn.getBoundingClientRect()
-      const cx = r.left + r.width / 2
-      const cy = r.top + r.height / 2
-      const distance = Math.hypot(event.clientX - cx, event.clientY - cy)
-      if (distance < r.width / 2 + 56) flee()
+      const distance = Math.hypot(event.clientX - (r.left + r.width / 2), event.clientY - (r.top + r.height / 2))
+      if (distance < r.width / 2 + 64) flee()
     }
-
     window.addEventListener('pointermove', onMove)
     return () => window.removeEventListener('pointermove', onMove)
   }, [flee])
 
+  useEffect(() => {
+    const btn = btnRef.current
+    if (!btn) return
+    const onTouch = (event: TouchEvent) => {
+      event.preventDefault()
+      flee()
+    }
+    btn.addEventListener('touchstart', onTouch, { passive: false })
+    return () => btn.removeEventListener('touchstart', onTouch)
+  }, [flee])
+
   return (
-    <div ref={wrapRef} className="relative flex h-16 items-center justify-center">
+    <div ref={wrapRef} className="relative flex min-h-14 items-center justify-center">
       <button
+        ref={btnRef}
         type="button"
+        aria-label="Nahhh. This one runs away on purpose."
         onClick={(event) => {
-          // Give up after enough dodges so she is never actually trapped.
-          if (dodges >= 6) {
-            onCaught()
-            return
-          }
-          // Touch/pen taps make it hop instead of registering.
-          if (event.detail === 0) {
-            onCaught()
-            return
-          }
+          event.preventDefault()
+          event.stopPropagation()
           flee()
         }}
-        onFocus={() => setOffset({ x: 0, y: 0 })}
-        className="rounded-full border-2 border-foreground bg-card px-7 py-3 text-sm font-bold text-foreground/80 transition-transform duration-200 ease-out will-change-transform"
-        style={{
-          transform: `translate(${offset.x}px, ${offset.y}px) rotate(${rotation}deg)`,
+        onPointerDown={(event) => {
+          if (event.pointerType === 'mouse') return
+          event.preventDefault()
+          flee()
         }}
+        onFocus={flee}
+        className="rounded-sm border border-foreground/35 bg-background/70 px-7 py-3 text-sm font-semibold tracking-wide text-foreground/75 backdrop-blur-sm transition-transform duration-150 ease-out will-change-transform"
+        style={
+          pos
+            ? {
+                position: 'fixed',
+                left: pos.x,
+                top: pos.y,
+                zIndex: 60,
+                transform: `rotate(${rotation}deg)`,
+              }
+            : { transform: `rotate(${rotation}deg)` }
+        }
       >
-        {label}
+        Nahhh
       </button>
-
-      {dodges > 0 && dodges < 6 && (
+      {dodges > 0 && (
         <p
           aria-live="polite"
-          className="pointer-events-none absolute -bottom-1 left-0 right-0 text-center text-[11px] font-semibold tracking-wide text-muted-foreground"
+          className="pointer-events-none absolute -bottom-1 left-0 right-0 text-center font-serif text-[11px] tracking-wide text-muted-foreground"
         >
-          {dodges < 3 ? 'that one is slippery' : 'okay, it likes running'}
+          {dodges < 3 ? 'even winter could not catch that' : 'the realm has spoken: that button flees'}
         </p>
       )}
     </div>
