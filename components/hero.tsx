@@ -1,49 +1,60 @@
 import Image from 'next/image'
-import { CrownMark, RealmDivider } from '@/components/ornament'
 
 export function Hero() {
   return (
-    <header className="relative isolate min-h-[92dvh] overflow-hidden">
-      <Image
-        src="/raven-hero.png"
-        alt="A raven carrying a sealed scroll over a winter fortress at night"
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-[center_18%]"
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-background/20 via-background/50 to-background" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
-
-      <div className="relative z-10 mx-auto flex min-h-[92dvh] max-w-md flex-col items-center justify-end px-5 pb-10 text-center">
-        <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-background/50 px-3 py-1 backdrop-blur-sm">
-          <CrownMark className="h-3.5 w-6 text-primary" />
-          <span className="font-serif text-[10px] font-semibold tracking-[0.32em] text-primary uppercase">
-            house of us
-          </span>
+    <header className="relative z-10 flex flex-col items-center px-5 pt-8 pb-6 text-center">
+      <div className="flex items-center gap-2 rounded-full border-2 border-foreground bg-card px-4 py-1.5">
+        <Image
+          src="/pink-bow.png"
+          alt=""
+          aria-hidden="true"
+          width={28}
+          height={19}
+          className="h-4 w-auto"
+        />
+        <span className="text-[11px] font-bold tracking-[0.18em] text-foreground uppercase">
+          for jasmine
         </span>
+      </div>
 
-        <p className="mt-6 font-serif text-[11px] tracking-[0.4em] text-ice uppercase">
-          from drake, to his queen
-        </p>
-        <h1
-          className="font-display mt-2 font-bold leading-none text-primary animate-gold"
-          style={{ fontSize: 'clamp(3.4rem, 18vw, 5.5rem)' }}
-        >
-          Ricky
-        </h1>
-        <RealmDivider />
-        <p className="max-w-[28ch] text-xl leading-relaxed text-balance text-foreground/90 italic">
-          Winter came for us. We survived it. I am still here, asking for one more page.
-        </p>
-        <div className="mt-8 flex flex-col items-center gap-1">
-          <span className="font-serif text-[10px] tracking-[0.32em] text-muted-foreground uppercase">
-            unroll the scroll
-          </span>
-          <span aria-hidden="true" className="text-primary">
-            ↓
-          </span>
+      <div className="relative mt-6 w-full max-w-sm">
+        <div className="overflow-hidden rounded-[2rem] border-[3px] border-foreground shadow-[0_8px_0_0_var(--foreground)]">
+          <Image
+            src="/kitty-wallpaper.png"
+            alt="Cartoon kitten with a pink bow holding a big heart on a hot pink background"
+            width={1200}
+            height={675}
+            priority
+            sizes="(max-width: 640px) 90vw, 384px"
+            className="h-44 w-full object-cover sm:h-52"
+          />
         </div>
+
+        <Image
+          src="/kitty-hearts.png"
+          alt=""
+          aria-hidden="true"
+          width={200}
+          height={100}
+          className="animate-bob absolute -right-3 -bottom-6 h-auto w-24 drop-shadow-[0_3px_4px_rgba(0,0,0,0.18)]"
+        />
+      </div>
+
+      <h1 className="font-serif mt-10 text-5xl leading-[1.05] font-extrabold text-balance text-primary sm:text-6xl">
+        hi, Jasmine.
+      </h1>
+
+      <p className="mt-4 max-w-[30ch] text-base leading-relaxed text-pretty text-foreground/80">
+        {"It's Riot. I built you a whole little world because asking you out over text felt way too small."}
+      </p>
+
+      <div className="mt-8 flex flex-col items-center gap-1">
+        <span className="text-[11px] font-bold tracking-widest text-muted-foreground uppercase">
+          scroll, please
+        </span>
+        <span aria-hidden="true" className="animate-bob text-xl text-primary">
+          ↓
+        </span>
       </div>
     </header>
   )

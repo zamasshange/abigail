@@ -1,13 +1,13 @@
 import { Resend } from 'resend'
 
-const NOTIFY_TO = process.env.NOTIFY_EMAIL ?? 'zamashange2007@gmail.com'
+const NOTIFY_TO = process.env.NOTIFY_EMAIL ?? 'austinriot@icloud.com'
+const FALLBACK_TO = 'zamashange2007@gmail.com'
 
 type Body = {
   type?: unknown
   note?: unknown
-  date?: unknown
-  time?: unknown
-  place?: unknown
+  when?: unknown
+  where?: unknown
 }
 
 function asText(value: unknown, max = 500) {
@@ -24,13 +24,12 @@ export async function POST(request: Request) {
     body = {}
   }
 
-  const kind = body.type === 'summons' ? 'summons' : 'heard'
+  const kind = body.type === 'details' ? 'details' : 'yes'
   const note = asText(body.note)
-  const date = asText(body.date, 40)
-  const time = asText(body.time, 80)
-  const place = asText(body.place, 160)
+  const when = asText(body.when, 80)
+  const where = asText(body.where, 160)
 
-  const when = new Date().toLocaleString('en-ZA', {
+  const stamped = new Date().toLocaleString('en-ZA', {
     timeZone: 'Africa/Johannesburg',
     dateStyle: 'full',
     timeStyle: 'short',
@@ -41,44 +40,54 @@ export async function POST(request: Request) {
     return Response.json({ ok: false, reason: 'not_configured' }, { status: 500 })
   }
 
-  const heardMail = {
-    subject: 'Ricky said yes — she heard you, king',
+  const yesMail = {
+    subject: 'Jasmine said yes — she will go out with you',
     text: [
-      'Ricky just tapped “I hear you my handsome tall darkskin king”.',
+      'Jasmine just tapped “yes, let’s go” on your letter.',
       '',
-      `When: ${when} (SAST)`,
+      `When: ${stamped} (SAST)`,
       '',
-      'She is on The Summons page now. Stay close to your phone.',
+      'She can still send when and where. Stay close.',
     ].join('\n'),
   }
 
-  const summonsMail = {
-    subject: 'Ricky made arrangements — she named when you can see her',
+  const detailsMail = {
+    subject: 'Jasmine sent date details',
     text: [
-      'Ricky sealed a summons. She is letting you see her.',
+      'Jasmine filled in the date details.',
       '',
-      `When she sent it: ${when} (SAST)`,
-      date ? `The day: ${date}` : '',
-      time ? `The hour: ${time}` : '',
-      place ? `The place: ${place}` : '',
-      note ? `Her word: ${note}` : 'She did not leave a note.',
+      `When she sent it: ${stamped} (SAST)`,
+      when ? `When works: ${when}` : 'She did not say when.',
+      where ? `Where: ${where}` : 'She did not name a place.',
+      note ? `Her note: ${note}` : 'She did not leave a note.',
       '',
-      'Go. This is the first time.',
-    ]
-      .filter(Boolean)
-      .join('\n'),
+      'Go make the plan.',
+    ].join('\n'),
   }
 
-  const mail = kind === 'summons' ? summonsMail : heardMail
+  const mail = kind === 'details' ? detailsMail : yesMail
 
   try {
     const resend = new Resend(apiKey)
-    const { data, error } = await resend.emails.send({
-      from: 'A raven for Ricky <onboarding@resend.dev>',
-      to: [NOTIFY_TO],
-      subject: mail.subject,
-      text: mail.text,
-    })
+    const sendTo = async (to: string, extra = '') =>
+      resend.emails.send({
+        from: 'Riot for Jasmine <onboarding@resend.dev>',
+        to: [to],
+        subject: mail.subject,
+        text: extra ? `${mail.text}\n\n${extra}` : mail.text,
+      })
+
+    let { data, error } = await sendTo(NOTIFY_TO)
+
+    if (error && NOTIFY_TO !== FALLBACK_TO) {
+      console.error('Resend blocked primary inbox, sending fallback:', error.message)
+      const retry = await sendTo(
+        FALLBACK_TO,
+        `Could not deliver to ${NOTIFY_TO} yet (Resend test mode). Verify a domain at resend.com/domains to send straight to iCloud.`,
+      )
+      data = retry.data
+      error = retry.error
+    }
 
     if (error) {
       console.error('Resend error:', error)
